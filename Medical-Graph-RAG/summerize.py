@@ -1,7 +1,6 @@
 import openai
 from openai import OpenAI
 from concurrent.futures import ThreadPoolExecutor
-import tiktoken
 import os
 
 # Add your own OpenAI API key
@@ -38,25 +37,22 @@ def call_openai_api(chunk):
         base_url=os.getenv("OPENAI_API_BASE_URL")
     )
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="deepseek-v4-flash",
         messages=[
             {"role": "system", "content": sum_prompt},
             {"role": "user", "content": f" {chunk}"},
         ],
         max_tokens=500,
-        n=1,
-        stop=None,
         temperature=0.5,
     )
     return response.choices[0].message.content
 
 def split_into_chunks(text, tokens=500):
-    encoding = tiktoken.encoding_for_model('gpt-4-1106-preview')
-    words = encoding.encode(text)
+    chars_per_chunk = tokens * 2
     chunks = []
-    for i in range(0, len(words), tokens):
-        chunks.append(' '.join(encoding.decode(words[i:i + tokens])))
-    return chunks   
+    for i in range(0, len(text), chars_per_chunk):
+        chunks.append(text[i:i + chars_per_chunk])
+    return chunks
 
 def process_chunks(content):
     chunks = split_into_chunks(content)

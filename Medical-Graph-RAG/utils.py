@@ -2,10 +2,19 @@ from openai import OpenAI
 import os
 from neo4j import GraphDatabase
 import numpy as np
-from camel.storages import Neo4jGraph
+from n4j_shim import Neo4jGraph
 import uuid
 from summerize import process_chunks
 import openai
+from sentence_transformers import SentenceTransformer
+
+_embedding_model = None
+
+def _get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        _embedding_model = SentenceTransformer("BAAI/bge-small-zh-v1.5")
+    return _embedding_model
 
 sys_prompt_one = """
 Please answer the question using insights supported by provided graph-based data relevant to medical information.
@@ -18,18 +27,9 @@ Modify the response to the question using the provided references. Include preci
 # Add your own OpenAI API key
 openai_api_key = os.getenv("OPENAI_API_KEY")
 
-def get_embedding(text, mod = "text-embedding-3-small"):
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_API_BASE_URL")
-    )
-
-    response = client.embeddings.create(
-        input=text,
-        model=mod
-    )
-
-    return response.data[0].embedding
+def get_embedding(text, mod=None):
+    model = _get_embedding_model()
+    return model.encode(text).tolist()
 
 def fetch_texts(n4j):
     # Fetch the text for each node
@@ -88,7 +88,7 @@ def call_llm(sys, user):
         base_url=os.getenv("OPENAI_API_BASE_URL")
     )
     response = client.chat.completions.create(
-        model="gpt-4-1106-preview",
+        model="deepseek-v4-flash",
         messages=[
             {"role": "system", "content": sys},
             {"role": "user", "content": f" {user}"},

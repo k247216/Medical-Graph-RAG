@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  neo4j:
+    image: neo4j:5.26-community
+    container_name: medgraph-neo4j
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/${NEO4J_PASSWORD:-neo4j123!}
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - ./neo4j-data/data:/data
+      - ./neo4j-data/logs:/logs
+      - ./neo4j-data/import:/var/lib/neo4j/import
+    healthcheck:
+      test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-neo4j123!}", "RETURN 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: .
+    container_name: medgraph-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - backend/.env
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    command: uvicorn backend.app:app --host 0.0.0.0 --port 8000

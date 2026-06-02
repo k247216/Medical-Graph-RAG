@@ -1,26 +1,42 @@
-from functools import lru_cache
-
 from .config import Settings
-from .services.diagnosis_service import DiagnosisService
-from .services.graph_service import GraphService
-from .services.llm_service import LlmService
+
+_settings: Settings | None = None
+_graph_service = None
+_llm_service = None
+_diagnosis_service = None
 
 
-@lru_cache
 def get_settings() -> Settings:
-    return Settings()
+    global _settings
+    if _settings is None:
+        _settings = Settings()
+    return _settings
 
 
-@lru_cache
-def get_graph_service() -> GraphService:
-    return GraphService(get_settings())
+async def get_graph_service():
+    global _graph_service
+    if _graph_service is None:
+        from .services.graph_service import GraphService
+
+        _graph_service = GraphService(get_settings())
+    return _graph_service
 
 
-@lru_cache
-def get_llm_service() -> LlmService:
-    return LlmService(get_settings())
+async def get_llm_service():
+    global _llm_service
+    if _llm_service is None:
+        from .services.llm_service import LlmService
+
+        _llm_service = LlmService(get_settings())
+    return _llm_service
 
 
-@lru_cache
-def get_diagnosis_service() -> DiagnosisService:
-    return DiagnosisService(get_graph_service(), get_llm_service())
+async def get_diagnosis_service():
+    global _diagnosis_service
+    if _diagnosis_service is None:
+        from .services.diagnosis_service import DiagnosisService
+
+        graph_svc = await get_graph_service()
+        llm_svc = await get_llm_service()
+        _diagnosis_service = DiagnosisService(graph_svc, llm_svc)
+    return _diagnosis_service

@@ -1,17 +1,41 @@
+# === Secrets & API Keys ===
+.env
+*.env
+!*.env.example
+
+# === Neo4j Database (too large for git, share separately) ===
+neo4j-data/
+
+# === Data & text files ===
 *.txt
+data/
+
+# === Python ===
+__pycache__/
+*.py[cod]
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# === IDE & OS ===
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === Docker ===
+.dockerignore
+
+# === Jupyter ===
+.ipynb_checkpoints/
+*.ipynb
+
+# === Other ===
 dataset
 dataset_paper
 dataset_test
 test*
-.dockerignore
 app.sh
-
-### Python template
-# Byte-compiled / optimized / DLL files
-__pycache__
-
-# Jupyter Notebook
-.ipynb_checkpoints
-
-# ignore special files or folds
-.DS_Store
+*.log

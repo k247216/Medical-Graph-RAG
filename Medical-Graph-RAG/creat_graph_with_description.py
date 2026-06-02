@@ -16,8 +16,11 @@ from nano_graphrag._utils import compute_mdhash_id
 from nano_graphrag._llm import openai_complete_if_cache
 
 # Import existing components
-from camel.loaders import UnstructuredIO
-from data_chunk import run_chunk
+# UnstructuredIO only used for chunking, we bypass it
+try:
+    from camel.loaders import UnstructuredIO
+except ImportError:
+    UnstructuredIO = None
 from utils import get_embedding, str_uuid, add_sum
 
 
@@ -72,7 +75,7 @@ async def extract_entities_with_description(content: str, entity_types: List[str
     # 调用 LLM
     print(f"  [Entity Extraction] 正在提取实体和关系...")
     response = await openai_complete_if_cache(
-        model="gpt-4o-mini",
+        model="deepseek-v4-flash",
         prompt=prompt,
         system_prompt="You are a helpful assistant that extracts entities and relationships from medical texts."
     )
@@ -241,11 +244,12 @@ def creat_metagraph_with_description(args, content: str, gid: str, n4j):
     print(f"[图构建] 开始构建知识图谱 (GID: {gid[:8]}...)")
     print(f"{'='*60}")
     
-    # 实例化组件
-    uio = UnstructuredIO()
+    # 实例化组件（仅在需要时）
+    uio = UnstructuredIO() if UnstructuredIO else None
     
     # 是否使用细粒度分块
     if args.grained_chunk:
+        from data_chunk import run_chunk
         print("[分块] 使用细粒度分块...")
         content_chunks = run_chunk(content)
     else:
