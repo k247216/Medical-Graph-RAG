@@ -45,17 +45,17 @@ class LlmService:
         context: str,
     ) -> list[dict[str, Any]]:
         system_prompt = (
-            "You are a medical assistant. Return only strict JSON with the schema: "
+            "你是一位临床医学助手。请严格返回如下JSON格式，不要包含markdown或其他额外内容："
             '{"diagnosis_suggestions": '
-            '[{"diagnosis": string, "confidence": string, "evidence": string}]} '
-            "The list must contain 3-5 items. Do not include markdown or extra keys."
+            '[{"diagnosis": "诊断名称", "confidence": "高/中/低", "evidence": "基于图谱节点的推理依据"}]} '
+            "诊断列表需包含3-5项。所有文本必须使用中文，包括诊断名、置信度和证据描述。"
         )
 
         user_prompt = (
-            f"Patient description: {patient_info}\n"
-            f"Keywords: {keywords}\n"
-            f"Graph context:\n{context}\n"
-            "Only use the provided context and patient info."
+            f"患者信息：{patient_info}\n"
+            f"关键词：{keywords}\n"
+            f"知识图谱上下文：\n{context}\n"
+            "请仅根据提供的图谱上下文和患者信息进行推理，所有输出使用中文。"
         )
 
         try:
@@ -81,17 +81,17 @@ class LlmService:
         context: str,
     ) -> AsyncIterator[str]:
         system_prompt = (
-            "You are a medical assistant. Return only strict JSON with the schema: "
+            "你是一位临床医学助手。请严格返回如下JSON格式，不要包含markdown或其他额外内容："
             '{"diagnosis_suggestions": '
-            '[{"diagnosis": string, "confidence": string, "evidence": string}]} '
-            "The list must contain 3-5 items."
+            '[{"diagnosis": "诊断名称", "confidence": "高/中/低", "evidence": "基于图谱节点的推理依据"}]} '
+            "诊断列表需包含3-5项。所有文本必须使用中文。"
         )
 
         user_prompt = (
-            f"Patient description: {patient_info}\n"
-            f"Keywords: {keywords}\n"
-            f"Graph context:\n{context}\n"
-            "Only use the provided context and patient info."
+            f"患者信息：{patient_info}\n"
+            f"关键词：{keywords}\n"
+            f"知识图谱上下文：\n{context}\n"
+            "请仅根据提供的图谱上下文和患者信息进行推理，所有输出使用中文。"
         )
 
         try:

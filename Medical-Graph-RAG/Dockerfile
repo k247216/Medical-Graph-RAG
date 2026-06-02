@@ -23,6 +23,9 @@ RUN conda config --append channels pkgs/main
 # Create the Conda environment inside the Docker container
 RUN conda env create -f medgraphrag.yml
 
+# Install additional pip dependencies not in yml
+RUN conda run -n medgraphrag pip install pydantic-settings
+
 # Make sure the environment is activated and Conda commands are available
 RUN echo "source activate medgraphrag" > ~/.bashrc
 SHELL ["/bin/bash", "--login", "-c"]

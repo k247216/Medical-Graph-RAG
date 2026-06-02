@@ -284,11 +284,11 @@ dependencies:
       - pyarrow-hotfix==0.6
       - pyasn1==0.6.0
       - pyasn1-modules==0.4.0
-      - pyboy==1.6.9
       - pycocotools==2.0.8
       - pycparser==2.22
       - pydantic==2.6.1
       - pydantic-core==2.16.2
+      - pydantic-settings==2.2.1
       - pydub==0.25.1
       - pygithub==2.3.0
       - pygments==2.15.1

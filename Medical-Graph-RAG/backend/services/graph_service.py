@@ -43,13 +43,15 @@ class GraphService:
             return {"nodes": [], "links": [], "summary": [], "layerStats": {}}
 
         keyword_values = [k.lower() for k in keywords]
-        max_total = min(limit * 2, 200)
+        max_total = min(limit * 3, 300)
 
         # hop/reference_hops 已经由 Pydantic 校验范围，安全拼接
         cypher = f"""
         // 第一步：按关键词 + layer 过滤种子节点
         MATCH (n)
-        WHERE any(k IN $keywords WHERE toLower(coalesce(n.id, n.name, "")) CONTAINS k)
+        WHERE any(k IN $keywords WHERE
+            toLower(coalesce(n.id, n.name, n.case_id, n.name_zh, n.description, n.summary, "")) CONTAINS k
+        )
           AND n.layer IN $layers
           AND NOT n:Summary AND NOT n:Chunk
         WITH collect(DISTINCT n) AS seeds
@@ -61,7 +63,9 @@ class GraphService:
         WITH seeds, collect(DISTINCT m) AS neighbors
         WITH seeds + neighbors AS expanded
         UNWIND expanded AS n
-        WITH DISTINCT n LIMIT {max_total}
+        WITH DISTINCT n
+        ORDER BY n.layer
+        LIMIT {max_total}
         WITH collect(n) AS base_nodes
 
         // 第三步：通过 Summary 桥接 + REFERENCE 跨层扩展
@@ -82,16 +86,16 @@ class GraphService:
         WHERE m IN graph_nodes AND NOT m:Summary AND NOT m:Chunk
         RETURN
             collect(DISTINCT {{
-                id: coalesce(n.id, n.name, toString(id(n))),
+                id: coalesce(n.id, n.name, n.name_zh, n.case_id, toString(id(n))),
                 label: head(labels(n)),
-                name: coalesce(n.name, n.id, ""),
+                name: coalesce(n.name_zh, n.name, n.id, n.case_id, ""),
                 layer: n.layer,
                 gid: n.gid,
                 properties: properties(n)
             }}) AS nodes,
             collect(DISTINCT CASE WHEN r IS NULL THEN null ELSE {{
-                source: coalesce(startNode(r).id, startNode(r).name, toString(id(startNode(r)))),
-                target: coalesce(endNode(r).id, endNode(r).name, toString(id(endNode(r)))),
+                source: coalesce(startNode(r).id, startNode(r).name, startNode(r).name_zh, toString(id(startNode(r)))),
+                target: coalesce(endNode(r).id, endNode(r).name, endNode(r).name_zh, toString(id(endNode(r)))),
                 label: type(r),
                 properties: properties(r)
             }} END) AS links
@@ -139,10 +143,10 @@ class GraphService:
                 layer = n.get("layer", "unknown")
                 layer_nodes.setdefault(layer, []).append(n)
 
-        # 交错排列各层节点，每层最多 limit/2
-        per_layer = max(limit // max(len(layer_nodes), 1), 1)
+        # 交错排列各层节点，保持各层均衡
+        per_layer = max(limit // max(len(layer_nodes), 1), 2)
         nodes = []
-        for lyr in layer_nodes:
+        for lyr in sorted(layer_nodes.keys()):
             nodes.extend(layer_nodes[lyr][:per_layer])
         seen_ids = {n.get("id") for n in nodes}
 
