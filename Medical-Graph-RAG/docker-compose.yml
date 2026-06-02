@@ -14,6 +14,7 @@ services:
       - ./neo4j-data/data:/data
       - ./neo4j-data/logs:/logs
       - ./neo4j-data/import:/var/lib/neo4j/import
+      - ./neo4j-data/conf/neo4j.conf:/var/lib/neo4j/conf/neo4j.conf
     healthcheck:
       test: ["CMD", "cypher-shell", "-u", "neo4j", "-p", "${NEO4J_PASSWORD:-neo4j123!}", "RETURN 1"]
       interval: 10s
