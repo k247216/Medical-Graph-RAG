@@ -43,3 +43,4 @@ dataset_test
 test*
 app.sh
 *.log
+neo4j-data.tar.gz
