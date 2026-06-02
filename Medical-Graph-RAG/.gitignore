@@ -4,7 +4,11 @@
 !*.env.example
 
 # === Neo4j Database (too large for git, share separately) ===
-neo4j-data/
+neo4j-data/data/
+neo4j-data/logs/*
+!neo4j-data/logs/.gitkeep
+neo4j-data/import/*
+!neo4j-data/import/.gitkeep
 
 # === Data & text files ===
 *.txt
