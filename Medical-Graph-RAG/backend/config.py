@@ -18,4 +18,4 @@ class Settings(BaseSettings):
     service_host: str = Field(default="0.0.0.0", validation_alias="SERVICE_HOST")
     service_port: int = Field(default=8000, validation_alias="SERVICE_PORT")
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False)
+    model_config = SettingsConfigDict(env_file=(".env", "backend/.env"), case_sensitive=False, extra="ignore")
