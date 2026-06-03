@@ -51,8 +51,7 @@
   |------|------|
   | `GET /api/health` | 检查 Neo4j 和大模型服务状态 |
   | `POST /api/graph/search` | 根据关键词查询医学知识图谱子图 |
-  | `POST /api/diagnosis/suggestions` |
-  结合患者信息、关键词和图谱上下文生成诊断建议，并返回诊断链 |
+  | `POST /api/diagnosis/suggestions` |结合患者信息、关键词和图谱上下文生成诊断建议，并返回诊断链 |
 
   **整体调用流程：**
 ```
